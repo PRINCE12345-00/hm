@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply font-sans antialiased;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-haryana-red to-haryana-mustard bg-clip-text text-transparent;
+  }
+  
+  .folk-border {
+    @apply border-2 border-haryana-red/20;
+    position: relative;
+  }
+  
+  .folk-border::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 8px;
+    background: linear-gradient(to right, transparent, #C41E3A, transparent);
+  }
+}
