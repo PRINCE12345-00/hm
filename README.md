@@ -1,6 +1,6 @@
-# Haryana Mandli Website
+# Haryanvi Mandli Website
 
-Official website of Haryana Mandli - The Cultural Society of DCRUST (Deenbandhu Chhotu Ram University of Science and Technology).
+Full-stack cultural society management and engagement platform for Haryanvi Mandli, DCRUST (Deenbandhu Chhotu Ram University of Science and Technology).
 
 ## 🎨 Features
 
@@ -9,6 +9,8 @@ Official website of Haryana Mandli - The Cultural Society of DCRUST (Deenbandhu 
 - **Smooth Animations**: Powered by Framer Motion for engaging user interactions
 - **SEO Optimized**: Clean structure with proper meta tags
 - **Fast Loading**: Optimized performance with Vite
+- **Management Workspaces**: Role-aware member and admin dashboards
+- **Platform API**: Events, registrations, attendance, members, certificates, announcements, auditions, archive, search, analytics, and chatbot endpoints
 
 ## 📄 Sections
 
@@ -42,6 +44,19 @@ npm run dev
 ```
 
 3. Open your browser and visit `http://localhost:5173`
+
+4. In a second terminal, start the backend API:
+```bash
+npm run server
+```
+
+The API runs at `http://localhost:3001`. Copy `.env.example` to `.env`, set `MONGO_URI` to your local MongoDB or MongoDB Atlas connection string, and set a private `JWT_SECRET` and admin password before deployment. When `MONGO_URI` is set, all application data is stored in MongoDB; without it, the backend uses the local `data/store.json` fallback.
+
+For MongoDB Atlas: create a free cluster, create a database user, allow your development IP in Network Access, copy the Node.js connection string, and put it in `.env` as `MONGO_URI`. Example local value: `mongodb://127.0.0.1:27017/haryana_mandli`. Start the API with `npm run server`; it prints `MongoDB connected` when the connection succeeds and exits with an error if the configured MongoDB server is unavailable.
+
+The default development admin is `admin@haryanamandli.in` with password `admin123`. Change it through `ADMIN_PASSWORD` in `.env` before using the application outside local development.
+
+The dashboard is available from the `Login / Sign up` button. Members can view their profile and register for events. Administrators and coordinators can manage events, members, contact requests, auditions, announcements, and analytics. API details are listed in `openapi.json`.
 
 ### Build for Production
 
@@ -96,7 +111,7 @@ The website is fully responsive and optimized for:
 
 ## 📄 License
 
-This project is for Haryana Mandli, DCRUST. All rights reserved.
+This project is for Haryanvi Mandli, DCRUST. All rights reserved.
 
 ## 🤝 Contributing
 
@@ -114,4 +129,4 @@ For any queries or support, contact:
 
 ---
 
-Built with ❤️ for Haryana Mandli
+Built with ❤️ for Haryanvi Mandli

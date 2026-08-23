@@ -1,0 +1,16 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Haryanvi Mandli Platform API", "version": "1.0.0" },
+  "servers": [{ "url": "http://localhost:3001/api" }],
+  "paths": {
+    "/health": { "get": { "summary": "Health check", "responses": { "200": { "description": "API is healthy" } } } },
+    "/auth/signup": { "post": { "summary": "Register member", "responses": { "201": { "description": "Account created" } } } },
+    "/auth/login": { "post": { "summary": "Login", "responses": { "200": { "description": "JWT issued" } } } },
+    "/events": { "get": { "summary": "List events", "responses": { "200": { "description": "Events" } } }, "post": { "summary": "Create event", "responses": { "201": { "description": "Event created" } } } },
+    "/events/{id}/register": { "post": { "summary": "Register for event", "responses": { "201": { "description": "Registration and QR payload" } } } },
+    "/events/{id}/attendance": { "post": { "summary": "Mark attendance", "responses": { "201": { "description": "Attendance recorded" } } } },
+    "/admin/analytics": { "get": { "summary": "Dashboard analytics", "responses": { "200": { "description": "Analytics" } } } },
+    "/certificates/{certificateId}/verify": { "get": { "summary": "Verify certificate", "responses": { "200": { "description": "Verification result" } } } },
+    "/chatbot": { "post": { "summary": "Ask Mandli assistant", "responses": { "200": { "description": "Assistant response" } } } }
+  }
+}

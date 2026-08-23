@@ -3,11 +3,11 @@ import { Users, Target, Heart, Award } from 'lucide-react';
 
 const About = () => {
   return (
-    <section id="about" className="py-20 bg-haryana-cream relative overflow-hidden">
+    <section id="about" className="py-28 lg:py-36 bg-haryana-cream relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-folk-pattern opacity-20"></div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -16,7 +16,7 @@ const About = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-haryana-dark mb-4">
-            About <span className="text-gradient">Haryana Mandli</span>
+            About <span className="text-gradient">Haryanvi Mandli</span>
           </h2>
           <div className="w-24 h-1 bg-gradient-to-r from-haryana-red to-haryana-mustard mx-auto"></div>
         </motion.div>
@@ -33,8 +33,8 @@ const About = () => {
             <div>
               <h3 className="text-3xl font-bold text-haryana-dark mb-4">Our History</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Haryana Mandli was established in <span className="font-semibold text-haryana-red">2014</span> by the visionary 
-                <span className="font-semibold text-haryana-red"> Qadir Khan Sir</span> at DCRUST (Deenbandhu Chhotu Ram University of Science and Technology). 
+                Haryanvi Mandli was established in <span className="font-semibold text-haryana-red">2014</span> by the visionary 
+                <span className="font-semibold text-haryana-red"> Kadir Khan Sir</span> at DCRUST (Deenbandhu Chhotu Ram University of Science and Technology). 
                 What started as a small initiative has grown into a vibrant cultural society that celebrates and preserves 
                 the rich heritage of Haryana.
               </p>
@@ -97,14 +97,14 @@ const About = () => {
           className="bg-gradient-to-r from-haryana-dark to-haryana-earth rounded-2xl shadow-xl p-8 md:p-12 text-white"
         >
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-haryana-mustard to-haryana-red rounded-full flex items-center justify-center flex-shrink-0">
-              <Users className="text-white" size={64} />
+            <div className="w-36 h-36 md:w-44 md:h-44 bg-gradient-to-br from-haryana-mustard to-haryana-red rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden border-4 border-haryana-mustard shadow-xl">
+              <img src="/pictures/kadir khan.jpeg" alt="Kadir Khan Sir" className="w-full h-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
             </div>
             <div className="text-center md:text-left">
               <h3 className="text-3xl font-bold mb-2">Our Founder</h3>
-              <div className="text-2xl text-haryana-mustard font-semibold mb-4">Qadir Khan Sir</div>
+              <div className="text-2xl text-haryana-mustard font-semibold mb-4">Kadir Khan Sir</div>
               <p className="text-white/90 leading-relaxed max-w-2xl">
-                A visionary educator and cultural enthusiast, Qadir Khan Sir founded Haryana Mandli with the belief that 
+                A visionary educator and cultural enthusiast, Kadir Khan Sir founded Haryanvi Mandli with the belief that 
                 art and culture are essential for holistic development. His dedication and passion have inspired 
                 countless students to embrace their cultural roots and showcase their talents on national stages.
               </p>
