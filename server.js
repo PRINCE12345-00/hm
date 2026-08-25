@@ -54,7 +54,7 @@ function requireAuth(req, res, next) {
 }
 function requireAdmin(req, res, next) { if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' }); next(); }
 function requireRoles(...roles) { return (req, res, next) => roles.includes(req.user.role) ? next() : res.status(403).json({ error: 'Insufficient permissions.' }); }
-function withCollections(store) { for (const key of ['events', 'registrations', 'attendance', 'members', 'certificates', 'announcements', 'notifications', 'archive', 'auditions']) store[key] ||= []; store.auditionStatus ||= { live: false, updatedAt: null }; return store; }
+function withCollections(store) { for (const key of ['events', 'registrations', 'attendance', 'members', 'certificates', 'announcements', 'notifications', 'archive', 'auditions', 'reviewSessions', 'reviews']) store[key] ||= []; store.auditionStatus ||= { live: false, updatedAt: null }; return store; }
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
@@ -177,10 +177,91 @@ app.get('/api/members', requireAuth, requireRoles('admin', 'coordinator'), async
   res.json({ members });
 });
 app.patch('/api/members/:id/role', requireAuth, requireAdmin, async (req, res) => { const store = await readStore(); const member = store.users.find(user => user.id === req.params.id); if (!member) return res.status(404).json({ error: 'Member not found.' }); if (!['member', 'coordinator', 'visitor'].includes(req.body.role)) return res.status(400).json({ error: 'Invalid role.' }); member.role = req.body.role; await writeStore(store); res.json({ member: { id: member.id, name: member.name, email: member.email, role: member.role } }); });
-app.post('/api/events/:id/attendance', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { const store = await readStore(); const registration = store.registrations.find(item => item.registrationId === req.body.registrationId && item.eventId === req.params.id); if (!registration) return res.status(404).json({ error: 'Registration ID not found.' }); const record = { id: crypto.randomUUID(), eventId: req.params.id, registrationId: registration.registrationId, userId: registration.userId, markedAt: new Date().toISOString() }; if (!store.attendance.some(item => item.registrationId === record.registrationId)) store.attendance.push(record); await writeStore(store); res.status(201).json({ attendance: record }); });
+app.post('/api/events/:id/attendance', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  const rawId = String(req.body.registrationId || '').trim();
+  const cleanId = rawId.replace(/^HM-PASS:/, '').trim();
+  const registration = store.registrations.find(item => item.registrationId === cleanId && item.eventId === req.params.id);
+  if (!registration) return res.status(404).json({ error: `Registration ID '${cleanId}' not found for this event.` });
+  const record = { id: crypto.randomUUID(), eventId: req.params.id, registrationId: registration.registrationId, userId: registration.userId, markedAt: new Date().toISOString() };
+  if (!store.attendance.some(item => item.registrationId === record.registrationId && item.eventId === req.params.id)) store.attendance.push(record);
+  await writeStore(store);
+  const student = store.users.find(u => u.id === registration.userId);
+  res.status(201).json({ attendance: record, studentName: student?.name || 'Student' });
+});
 app.get('/api/events/:id/attendance', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { const store = await readStore(); const registered = store.registrations.filter(item => item.eventId === req.params.id); const present = store.attendance.filter(item => item.eventId === req.params.id); res.json({ registered: registered.length, present: present.length, absent: registered.length - present.length, percentage: registered.length ? Math.round((present.length / registered.length) * 1000) / 10 : 0 }); });
-app.post('/api/admin/certificates', requireAuth, requireAdmin, async (req, res) => { const store = await readStore(); const certificate = { id: crypto.randomUUID(), certificateId: `HM-CERT-${new Date().getFullYear()}-${String(store.certificates.length + 1).padStart(5, '0')}`, userId: req.body.userId, eventId: req.body.eventId, issuedAt: new Date().toISOString() }; store.certificates.push(certificate); await writeStore(store); res.status(201).json({ certificate, qrPayload: `HM-CERT:${certificate.certificateId}` }); });
-app.get('/api/certificates/:certificateId/verify', async (req, res) => { const certificate = (await readStore()).certificates.find(item => item.certificateId === req.params.certificateId); res.json({ valid: Boolean(certificate), certificate: certificate || null }); });
+app.get('/api/events/:id/attendance/list', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  const registered = store.registrations.filter(item => item.eventId === req.params.id);
+  const attendanceRecords = store.attendance.filter(item => item.eventId === req.params.id);
+  const roster = registered.map(reg => {
+    const student = store.users.find(u => u.id === reg.userId);
+    const att = attendanceRecords.find(a => a.registrationId === reg.registrationId);
+    return {
+      registrationId: reg.registrationId,
+      userId: reg.userId,
+      studentName: student?.name || 'Unknown student',
+      email: student?.email || '',
+      rollNo: student?.rollNo || '',
+      branch: student?.branch || '',
+      phone: student?.phone || '',
+      category: reg.category || 'General',
+      registeredAt: reg.registeredAt,
+      present: Boolean(att),
+      markedAt: att?.markedAt || null
+    };
+  });
+  res.json({ roster });
+});
+app.post('/api/events/:id/attendance/toggle', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  const { registrationId, present } = req.body;
+  const reg = store.registrations.find(r => r.registrationId === registrationId && r.eventId === req.params.id);
+  if (!reg) return res.status(404).json({ error: 'Registration not found for this event.' });
+  if (present) {
+    if (!store.attendance.some(a => a.registrationId === registrationId && a.eventId === req.params.id)) {
+      store.attendance.push({ id: crypto.randomUUID(), eventId: req.params.id, registrationId, userId: reg.userId, markedAt: new Date().toISOString() });
+    }
+  } else {
+    store.attendance = store.attendance.filter(a => !(a.registrationId === registrationId && a.eventId === req.params.id));
+  }
+  await writeStore(store);
+  res.json({ success: true, present });
+});
+function certificateDetails(store, certificate) {
+  if (!certificate) return null;
+  const user = store.users.find(item => item.id === certificate.userId);
+  const event = store.events.find(item => item.id === certificate.eventId);
+  return { ...certificate, recipient: user ? { id: user.id, name: user.name, email: user.email, branch: user.branch || '', rollNo: user.rollNo || '' } : null, event: event ? { id: event.id, title: event.title, startsAt: event.startsAt, venue: event.venue } : null };
+}
+app.get('/api/admin/certificates', requireAuth, requireRoles('admin', 'coordinator'), async (_req, res) => { const store = await readStore(); res.json({ certificates: store.certificates.map(item => certificateDetails(store, item)) }); });
+app.get('/api/me/certificates', requireAuth, async (req, res) => { const store = await readStore(); res.json({ certificates: store.certificates.filter(item => item.userId === req.user.id).map(item => certificateDetails(store, item)) }); });
+app.post('/api/admin/certificates', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  const user = store.users.find(item => item.id === req.body.userId);
+  const event = store.events.find(item => item.id === req.body.eventId);
+  if (!user || user.role === 'admin') return res.status(400).json({ error: 'Choose a valid member.' });
+  if (!event) return res.status(400).json({ error: 'Choose a valid event.' });
+  const existing = store.certificates.find(item => item.userId === user.id && item.eventId === event.id);
+  if (existing) return res.status(409).json({ error: `A certificate for this member and event already exists (${existing.certificateId}).` });
+  const certificate = { id: crypto.randomUUID(), certificateId: `HM-CERT-${new Date().getFullYear()}-${String(store.certificates.length + 1).padStart(5, '0')}`, userId: user.id, eventId: event.id, issuedAt: new Date().toISOString() };
+  store.certificates.push(certificate);
+  await writeStore(store);
+  res.status(201).json({ certificate: certificateDetails(store, certificate), qrPayload: `HM-CERT:${certificate.certificateId}` });
+});
+app.get('/api/certificates/:certificateId/verify', async (req, res) => { const store = await readStore(); const certificate = store.certificates.find(item => item.certificateId === req.params.certificateId); res.json({ valid: Boolean(certificate), certificate: certificateDetails(store, certificate) }); });
+app.get('/api/review-sessions', async (_req, res) => { const sessions = (await readStore()).reviewSessions.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt)); res.json({ reviewSessions: sessions }); });
+app.post('/api/admin/review-sessions', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const { title, startsAt, venue, description = '' } = req.body;
+  if (!title?.trim() || !startsAt || !venue?.trim()) return res.status(400).json({ error: 'Title, venue and date/time are required.' });
+  if (Number.isNaN(new Date(startsAt).getTime())) return res.status(400).json({ error: 'Enter a valid date and time.' });
+  const store = await readStore();
+  const reviewSession = { id: crypto.randomUUID(), title: title.trim(), startsAt, venue: venue.trim(), description: description.trim(), createdBy: req.user.id, createdAt: new Date().toISOString() };
+  store.reviewSessions.push(reviewSession);
+  await writeStore(store);
+  res.status(201).json({ reviewSession });
+});
+app.delete('/api/admin/review-sessions/:id', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { const store = await readStore(); const next = store.reviewSessions.filter(item => item.id !== req.params.id); if (next.length === store.reviewSessions.length) return res.status(404).json({ error: 'Review session not found.' }); store.reviewSessions = next; await writeStore(store); res.status(204).end(); });
 app.post('/api/admin/announcements', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { if (!req.body.title?.trim() || !req.body.content?.trim()) return res.status(400).json({ error: 'Title and content are required.' }); const store = await readStore(); const announcement = { id: crypto.randomUUID(), title: req.body.title.trim(), content: req.body.content.trim(), createdAt: new Date().toISOString() }; store.announcements.unshift(announcement); store.notifications.unshift({ id: crypto.randomUUID(), type: 'announcement', title: announcement.title, readBy: [], createdAt: announcement.createdAt }); await writeStore(store); res.status(201).json({ announcement }); });
 app.get('/api/announcements', async (_req, res) => res.json({ announcements: (await readStore()).announcements }));
 app.get('/api/notifications', requireAuth, async (req, res) => res.json({ notifications: (await readStore()).notifications.map(item => ({ ...item, read: item.readBy.includes(req.user.id) })) }));
@@ -191,8 +272,48 @@ app.get('/api/auditions/status', async (_req, res) => res.json({ auditionStatus:
 app.patch('/api/admin/auditions/status', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { const store = await readStore(); store.auditionStatus = { live: Boolean(req.body.live), updatedAt: new Date().toISOString() }; await writeStore(store); res.json({ auditionStatus: store.auditionStatus }); });
 app.get('/api/admin/auditions', requireAuth, requireRoles('admin', 'coordinator'), async (_req, res) => res.json({ auditions: (await readStore()).auditions }));
 app.patch('/api/admin/auditions/:id', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => { const store = await readStore(); const audition = store.auditions.find(item => item.id === req.params.id); if (!audition) return res.status(404).json({ error: 'Audition not found.' }); audition.status = ['Shortlisted', 'Selected', 'Rejected'].includes(req.body.status) ? req.body.status : 'Pending'; await writeStore(store); res.json({ audition }); });
-app.get('/api/search', async (req, res) => { const query = String(req.query.q || '').toLowerCase(); const store = await readStore(); const match = item => JSON.stringify(item).toLowerCase().includes(query); res.json({ events: store.events.filter(match), announcements: store.announcements.filter(match), archive: store.archive.filter(match) }); });
-app.post('/api/chatbot', async (req, res) => { const question = String(req.body.message || '').toLowerCase(); const event = (await readStore()).events.find(item => item.registrationOpen); let reply = 'I can help with events, registration, auditions, practice, coordinators, and contact details.'; if (question.includes('event') || question.includes('upcoming')) reply = event ? `${event.title} is scheduled at ${event.venue}.` : 'There are no upcoming events published yet.'; else if (question.includes('join') || question.includes('register')) reply = 'Create an account, open Events, and select Register on an available event.'; else if (question.includes('contact')) reply = 'Email haryanvimandli@dcrust.ac.in or use the contact form.'; res.json({ reply }); });
+app.get('/api/reviews', async (_req, res) => {
+  const store = await readStore();
+  const reviews = (store.reviews || []).filter(item => item.isPublic !== false);
+  res.json({ reviews });
+});
+app.get('/api/admin/reviews', requireAuth, requireRoles('admin', 'coordinator'), async (_req, res) => {
+  const store = await readStore();
+  res.json({ reviews: store.reviews || [] });
+});
+app.post('/api/admin/reviews', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const { authorName, role = 'Senior Alumni', quote, year = 'Passout Batch', photoUrl = '', rating = 5, isPublic = true } = req.body;
+  if (!authorName?.trim() || !quote?.trim()) return res.status(400).json({ error: 'Author name and review text are required.' });
+  const store = await readStore();
+  if (!store.reviews) store.reviews = [];
+  const review = { id: crypto.randomUUID(), authorName: authorName.trim(), role: role.trim(), quote: quote.trim(), year: String(year).trim(), photoUrl: photoUrl.trim(), rating: Number(rating) || 5, isPublic: Boolean(isPublic), createdAt: new Date().toISOString() };
+  store.reviews.unshift(review);
+  await writeStore(store);
+  res.status(201).json({ review });
+});
+app.patch('/api/admin/reviews/:id', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  if (!store.reviews) store.reviews = [];
+  const review = store.reviews.find(item => item.id === req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found.' });
+  if (typeof req.body.isPublic === 'boolean') review.isPublic = req.body.isPublic;
+  if (req.body.authorName) review.authorName = req.body.authorName.trim();
+  if (req.body.role) review.role = req.body.role.trim();
+  if (req.body.quote) review.quote = req.body.quote.trim();
+  if (req.body.year) review.year = String(req.body.year).trim();
+  if (req.body.rating) review.rating = Number(req.body.rating);
+  await writeStore(store);
+  res.json({ review });
+});
+app.delete('/api/admin/reviews/:id', requireAuth, requireRoles('admin', 'coordinator'), async (req, res) => {
+  const store = await readStore();
+  if (!store.reviews) store.reviews = [];
+  const next = store.reviews.filter(item => item.id !== req.params.id);
+  if (next.length === store.reviews.length) return res.status(404).json({ error: 'Review not found.' });
+  store.reviews = next;
+  await writeStore(store);
+  res.status(204).end();
+});
 
 async function ensureAdmin() {
   const store = await readStore();

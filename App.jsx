@@ -170,7 +170,7 @@ function AdminPanel({ requests, setRequests, onLogout, onClose }) {
   return <div className="fixed inset-0 z-[60] overflow-y-auto bg-haryana-cream"><div className="mx-auto min-h-screen max-w-[1400px] px-4 py-8 sm:px-8 lg:px-12"><div className="mb-10 flex flex-wrap items-center justify-between gap-4"><div><p className="flex items-center gap-2 text-sm font-bold uppercase tracking-[.2em] text-haryana-red"><ShieldCheck size={18} /> Admin workspace</p><h2 className="mt-2 text-4xl font-bold text-haryana-dark">Request management</h2></div><div className="flex gap-3"><button onClick={onClose} className="rounded border border-haryana-dark/20 px-4 py-2 text-sm font-semibold text-haryana-dark">View website</button><button onClick={onLogout} className="flex items-center gap-2 rounded bg-haryana-dark px-4 py-2 text-sm font-semibold text-white"><LogOut size={16} /> Log out</button></div></div><div className="mb-8 grid gap-4 sm:grid-cols-3"><div className="rounded-xl bg-white p-5"><p className="text-sm text-gray-500">Total requests</p><p className="mt-2 text-3xl font-bold text-haryana-dark">{requests.length}</p></div><div className="rounded-xl bg-white p-5"><p className="text-sm text-gray-500">Pending</p><p className="mt-2 text-3xl font-bold text-haryana-red">{requests.filter(request => request.status === 'Pending').length}</p></div><div className="rounded-xl bg-white p-5"><p className="text-sm text-gray-500">Handled</p><p className="mt-2 text-3xl font-bold text-green-700">{requests.filter(request => request.status === 'Handled').length}</p></div></div><div className="space-y-4">{requests.length === 0 ? <div className="rounded-xl bg-white p-10 text-center text-gray-600">No requests have arrived yet.</div> : requests.map(request => <article key={request.id} className="rounded-xl bg-white p-6 shadow-sm"><div className="flex flex-wrap items-start justify-between gap-4"><div><h3 className="text-xl font-bold text-haryana-dark">{request.name}</h3><p className="mt-1 text-sm text-haryana-red">{request.email} · {request.date}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold ${request.status === 'Handled' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{request.status}</span></div><p className="mt-5 leading-relaxed text-gray-700">{request.message}</p><div className="mt-5 flex gap-3"><button onClick={() => updateRequest(request.id, request.status === 'Handled' ? 'Pending' : 'Handled')} className="flex items-center gap-2 rounded bg-haryana-dark px-4 py-2 text-sm font-semibold text-white"><CheckCircle size={16} /> {request.status === 'Handled' ? 'Mark pending' : 'Mark handled'}</button><button onClick={() => removeRequest(request.id)} aria-label={`Delete request from ${request.name}`} className="rounded border border-red-200 p-2 text-haryana-red hover:bg-red-50"><Trash2 size={17} /></button></div></article>)}</div></div></div>;
 }
 
-function Navigation({ onAccountOpen, onAdminOpen, isAdmin, isAuthenticated }) {
+function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthenticated }) {
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState([]);
   const [auditionsLive, setAuditionsLive] = useState(false);
@@ -189,7 +189,7 @@ function Navigation({ onAccountOpen, onAdminOpen, isAdmin, isAuthenticated }) {
 
   return (
     <header className="fixed top-0 z-50 w-full bg-haryana-dark/95 text-white shadow-xl backdrop-blur border-b border-white/10">
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3.5 sm:px-8 lg:px-12">
+      <div className="w-full flex items-center justify-between px-4 sm:px-6 py-3.5">
         {/* Leftmost Side: Logo and Haryanvi Mandli Brand */}
         <a href="#home" className="flex items-center gap-3 group text-2xl font-extrabold tracking-tight">
           <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-haryana-mustard shadow-md transition-transform group-hover:scale-105 bg-haryana-dark flex items-center justify-center flex-shrink-0">
@@ -231,6 +231,17 @@ function Navigation({ onAccountOpen, onAdminOpen, isAdmin, isAuthenticated }) {
               </a>
             )
           )}
+
+          <button
+            onClick={() => {
+              setOpen(false);
+              onVerifyOpen();
+            }}
+            className="rounded-lg px-3.5 py-2 text-sm font-semibold text-white/85 transition-all hover:bg-white/10 hover:text-haryana-mustard text-left flex items-center gap-1.5"
+          >
+            <ShieldCheck size={16} className="text-haryana-mustard" /> Verify Certificate
+          </button>
+
           <button
             onClick={() => {
               setOpen(false);
@@ -433,32 +444,247 @@ function Team() {
 function Events() { return <section id="events" className="bg-haryana-dark py-20 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Join us" title="Coming up on stage" /><div className="grid gap-5 md:grid-cols-3">{[['Aagaz 2026', '12 Sep 2026', 'DCRUST Amphitheatre'], ['Rang-e-Haryana', '04 Oct 2026', 'University Cultural Fest'], ['Open Auditions', '18 Oct 2026', 'Mandli Practice Hall']].map(([name, date, place]) => <article key={name} className="rounded-xl border border-white/15 bg-white/5 p-6"><CalendarDays className="mb-8 text-haryana-mustard" /><h3 className="text-2xl font-bold">{name}</h3><p className="mt-3 text-haryana-mustard">{date}</p><p className="mt-2 text-white/60">{place}</p></article>)}</div></div></section>; }
 
 function EventsFromApi({ api, onRegister, onAccountOpen }) { const [events, setEvents] = useState([]); const [selectedEvent, setSelectedEvent] = useState(null); useEffect(() => { api('/events').then(result => setEvents(result.events)).catch(() => setEvents([])); }, [api]); return <section id="events" className="bg-haryana-dark py-28 lg:py-36 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Join us" title="Coming up on stage" /><div className="grid gap-6 md:grid-cols-3">{events.length === 0 ? [['Aagaz 2026', '12 Sep 2026', 'DCRUST Amphitheatre'], ['Rang-e-Haryana', '04 Oct 2026', 'University Cultural Fest'], ['Open Auditions 2026', '18 Oct 2026', 'Mandli Practice Hall']].map(([name, date, place]) => <article key={name} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]"><div><CalendarDays className="mb-8 text-haryana-mustard" size={38} /><h3 className="text-2xl md:text-3xl font-bold">{name}</h3><p className="mt-4 text-haryana-mustard text-lg font-semibold">{date}</p><p className="mt-2 text-white/70">{place}</p></div><button onClick={onAccountOpen} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font.bold text-haryana-dark hover:bg-yellow-400 transition-colors w-full font-semibold">{name.includes('Audition') ? 'Apply for Audition' : 'Register / get pass'}</button></article>) : events.map(event => <article key={event.id} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]"><div><CalendarDays className="mb-8 text-haryana-mustard" size={38} /><h3 className="text-2xl md:text-3xl font-bold">{event.title}</h3><p className="mt-4 text-haryana-mustard text-lg font-semibold">{new Date(event.startsAt).toLocaleString()}</p><p className="mt-2 text-white/70">{event.venue}</p><p className="mt-4 text-white/80">{event.description}</p></div><button onClick={() => event.title?.toLowerCase().includes('audition') ? onAccountOpen() : setSelectedEvent(event)} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font-semibold text-haryana-dark hover:bg-yellow-400 transition-colors w-full">{event.title?.toLowerCase().includes('audition') ? 'Apply for Audition' : 'Register / get pass'}</button></article>)}</div></div>{selectedEvent && <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"><div className="w-full max-w-md rounded-xl bg-white p-7 text-haryana-dark"><div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-[.2em] text-haryana-red">Registration</p><h3 className="mt-2 text-2xl font-bold">{selectedEvent.title}</h3></div><button onClick={() => setSelectedEvent(null)} aria-label="Close registration options"><X /></button></div><p className="mt-5 text-gray-600">Choose your participation category:</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{['Dance', 'Dramatic', 'Music', 'Theatre', 'Fine Arts'].map(category => <button key={category} onClick={() => { setSelectedEvent(null); onRegister(selectedEvent.id, category); }} className="rounded border border-haryana-red/20 px-4 py-3 text-left font-semibold hover:bg-haryana-cream">{category}</button>)}</div></div></div>}</section>; }
-function Testimonials() { return <section className="bg-haryana-cream py-28 lg:py-36"><div className="mx-auto max-w-4xl px-4 text-center sm:px-8"><Quote className="mx-auto mb-8 text-haryana-red" size={52} /><p className="text-3xl font-semibold leading-relaxed text-haryana-dark md:text-4xl">“Haryanvi Mandli gave me a stage, a family and a deeper connection with where I come from.”</p><div className="mt-8 flex justify-center gap-1.5 text-haryana-mustard">{[1, 2, 3, 4, 5].map(star => <Star key={star} size={22} className="fill-current" />)}</div><p className="mt-4 text-gray-600 text-lg">Former student performer</p></div></section>; }
+function Testimonials() {
+  const [reviews, setReviews] = useState([]);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    api('/reviews')
+      .then(res => {
+        if (res.reviews && res.reviews.length > 0) {
+          setReviews(res.reviews);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const current = reviews[activeIdx] || {
+    quote: "Haryanvi Mandli gave me a stage, a family and a deeper connection with where I come from.",
+    authorName: "Rohan Sharma",
+    role: "Former Cultural Secretary · CSE",
+    year: "Batch 2021",
+    rating: 5
+  };
+
+  return (
+    <section className="bg-haryana-cream py-28 lg:py-36 border-t border-b border-haryana-red/10">
+      <div className="mx-auto max-w-5xl px-4 text-center sm:px-8">
+        <p className="text-xs font-bold uppercase tracking-[.25em] text-haryana-red mb-2">Alumni Speak & Legacy</p>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-haryana-dark mb-8">Senior Passout Reflections</h2>
+        
+        <Quote className="mx-auto mb-6 text-haryana-red/40" size={56} />
+        
+        <div className="min-h-[140px] flex items-center justify-center">
+          <p className="text-2xl font-semibold leading-relaxed text-haryana-dark md:text-3xl transition-all duration-300">
+            “{current.quote}”
+          </p>
+        </div>
+
+        <div className="mt-6 flex justify-center gap-1.5 text-haryana-mustard">
+          {Array.from({ length: current.rating || 5 }).map((_, i) => (
+            <Star key={i} size={20} className="fill-current" />
+          ))}
+        </div>
+
+        <div className="mt-4">
+          <h4 className="text-xl font-bold text-haryana-dark">{current.authorName}</h4>
+          <p className="text-sm font-semibold text-haryana-red mt-0.5">{current.role} {current.year ? `· ${current.year}` : ''}</p>
+        </div>
+
+        {reviews.length > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-3">
+            {reviews.map((rev, idx) => (
+              <button
+                key={rev.id || idx}
+                onClick={() => setActiveIdx(idx)}
+                aria-label={`View review ${idx + 1}`}
+                className={`h-3 rounded-full transition-all ${
+                  idx === activeIdx ? 'w-8 bg-haryana-red' : 'w-3 bg-haryana-dark/20 hover:bg-haryana-dark/40'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 function Contact() { const [submitted, setSubmitted] = useState(false); const [error, setError] = useState(''); return <section id="contact" className="bg-white py-28 lg:py-36"><div className="mx-auto grid max-w-[1400px] gap-12 px-4 sm:px-8 lg:grid-cols-2 lg:px-12"><div><SectionHeading eyebrow="Say salaam" title="Bring your energy" /><p className="max-w-md text-lg leading-relaxed text-gray-600">Want to perform, collaborate or know more about Haryanvi Mandli? Reach out and we&apos;ll get back to you.</p><div className="mt-10 space-y-5 text-gray-700 text-lg"><p className="flex items-center gap-4"><Mail className="text-haryana-red" size={24} /> haryanvimandli@dcrust.ac.in</p><p className="flex items-center gap-4"><Phone className="text-haryana-red" size={24} /> +91 130 248 4000</p><p className="flex items-center gap-4"><MapPin className="text-haryana-red" size={24} /> DCRUST, Murthal, Sonipat, Haryana</p></div></div><form className="space-y-5 rounded-2xl bg-haryana-cream p-8 md:p-10 shadow-sm" onSubmit={event => { event.preventDefault(); const data = new FormData(event.currentTarget); setError(''); api('/requests', { method: 'POST', body: { name: data.get('name'), email: data.get('email'), message: data.get('message') } }).then(() => { setSubmitted(true); event.currentTarget.reset(); }).catch(requestError => setError(requestError.message)); }}><input required name="name" aria-label="Your name" placeholder="Your name" className="w-full rounded-lg border-0 p-4 text-base" /><input required name="email" type="email" aria-label="Email address" placeholder="Email address" className="w-full rounded-lg border-0 p-4 text-base" /><textarea required name="message" aria-label="Your message" placeholder="Tell us what you have in mind" rows="5" className="w-full rounded-lg border-0 p-4 text-base" /> {error && <p className="text-sm font-medium text-haryana-red">{error}</p>}<button className="inline-flex items-center gap-2 rounded-xl bg-haryana-red px-8 py-4 text-lg font-semibold text-white hover:bg-red-700 transition-colors" type="submit">{submitted ? <><CheckCircle size={20} /> Request sent</> : <>Send request <ArrowRight size={20} /></>}</button></form></div></section>; }
-function Footer() { return <footer className="bg-haryana-dark py-8 text-white"><div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-4 text-sm text-white/60 sm:flex-row sm:px-8 lg:px-12"><p>© 2026 Haryanvi Mandli, DCRUST</p><a href="#home" aria-label="Haryanvi Mandli on Instagram" className="hover:text-haryana-mustard"><Instagram size={20} /></a></div></footer>; }
+function CertificateVerifyModal({ onClose }) {
+  const [certId, setCertId] = useState('');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  function verify(e) {
+    e.preventDefault();
+    if (!certId.trim()) return;
+    setLoading(true);
+    setError('');
+    setResult(null);
+    const cleanId = certId.trim().replace(/^HM-CERT:/, '').trim();
+    api(`/certificates/${encodeURIComponent(cleanId)}/verify`)
+      .then(res => {
+        setLoading(false);
+        if (res.valid && res.certificate) {
+          setResult(res.certificate);
+        } else {
+          setError(`No valid certificate found for ID '${cleanId}'. Please check the verification code and try again.`);
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        setError(err.message || 'Failed to verify certificate.');
+      });
+  }
+
+  return (
+    <div className="fixed inset-0 z-[65] flex items-center justify-center overflow-y-auto bg-haryana-dark/80 p-4 backdrop-blur-sm" role="dialog">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 sm:p-8 shadow-2xl">
+        <button onClick={onClose} aria-label="Close verify modal" className="absolute right-5 top-5 text-gray-400 hover:text-haryana-red">
+          <X size={20} />
+        </button>
+        <div className="mb-5">
+          <p className="text-xs font-bold uppercase tracking-[.2em] text-haryana-red">Verification Portal</p>
+          <h2 className="text-2xl font-bold text-haryana-dark mt-1 flex items-center gap-2">
+            <ShieldCheck className="text-haryana-red" size={26} /> Verify Digital Certificate
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">Enter a Haryanvi Mandli Certificate Verification ID to validate its authenticity.</p>
+        </div>
+
+        <form onSubmit={verify} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Certificate ID *</label>
+            <input
+              required
+              value={certId}
+              onChange={e => setCertId(e.target.value)}
+              placeholder="e.g. HM-CERT-2026-00001"
+              className="w-full rounded-xl border border-gray-200 p-3 text-sm font-mono outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red"
+            />
+          </div>
+          <button disabled={loading} className="w-full rounded-xl bg-haryana-red px-5 py-3 font-semibold text-white hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+            {loading ? 'Verifying...' : 'Verify Certificate'}
+          </button>
+        </form>
+
+        {error && (
+          <div className="mt-5 rounded-xl bg-red-50 border border-red-200 p-4 text-xs font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
+        {result && (
+          <div className="mt-5 rounded-2xl bg-green-50 border border-green-200 p-5">
+            <div className="flex items-center gap-2 text-green-700 font-bold text-sm mb-3">
+              <CheckCircle size={18} /> AUTHENTIC CERTIFICATE VERIFIED
+            </div>
+            <div className="space-y-1.5 text-xs text-gray-700">
+              <p><strong className="text-gray-900 font-semibold">Recipient:</strong> {result.recipient?.name || 'N/A'}</p>
+              {result.recipient?.rollNo && <p><strong className="text-gray-900 font-semibold">Roll No / Branch:</strong> {result.recipient.rollNo} ({result.recipient.branch})</p>}
+              <p><strong className="text-gray-900 font-semibold">Event:</strong> {result.event?.title || 'N/A'}</p>
+              <p><strong className="text-gray-900 font-semibold">Venue:</strong> {result.event?.venue || 'DCRUST'}</p>
+              <p><strong className="text-gray-900 font-semibold">Issued Date:</strong> {new Date(result.issuedAt).toLocaleDateString()}</p>
+              <p className="pt-2 font-mono text-[11px] text-haryana-red font-bold">Verification ID: {result.certificateId}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Footer({ onVerifyOpen }) {
+  return (
+    <footer className="bg-haryana-dark py-8 text-white">
+      <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-4 text-sm text-white/60 sm:flex-row sm:px-8 lg:px-12">
+        <p>© 2026 Haryanvi Mandli, DCRUST</p>
+        <div className="flex items-center gap-6">
+          <button onClick={onVerifyOpen} className="hover:text-haryana-mustard flex items-center gap-1">
+            <ShieldCheck size={16} /> Verify Certificate
+          </button>
+          <a href="#home" aria-label="Haryanvi Mandli on Instagram" className="hover:text-haryana-mustard">
+            <Instagram size={20} />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 function App() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(() => JSON.parse(localStorage.getItem('hm-user') || 'null')?.role === 'admin');
+  const [verifyOpen, setVerifyOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    const role = JSON.parse(localStorage.getItem('hm-user') || 'null')?.role;
+    return role === 'admin' || role === 'coordinator';
+  });
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('hm-user') || 'null'));
   const [pendingRegistration, setPendingRegistration] = useState(null);
   const [requests, setRequests] = useState([]);
+
   return (
     <div className="min-h-screen">
-      <Navigation onAccountOpen={() => setAccountOpen(true)} onAdminOpen={() => setAdminOpen(true)} isAdmin={isAdmin} isAuthenticated={Boolean(user)} />
+      <Navigation
+        onAccountOpen={() => setAccountOpen(true)}
+        onAdminOpen={() => setAdminOpen(true)}
+        onVerifyOpen={() => setVerifyOpen(true)}
+        isAdmin={isAdmin}
+        isAuthenticated={Boolean(user)}
+      />
       <Hero onJoinOpen={() => setAccountOpen(true)} />
       <About />
       <Activities />
       <Achievements />
       <Gallery />
       <Team />
-      <EventsFromApi api={api} onAccountOpen={() => setAccountOpen(true)} onRegister={(eventId, category) => { setPendingRegistration({ eventId, category }); user ? setAdminOpen(true) : setAccountOpen(true); }} />
+      <EventsFromApi
+        api={api}
+        onAccountOpen={() => setAccountOpen(true)}
+        onRegister={(eventId, category) => {
+          setPendingRegistration({ eventId, category });
+          user ? setAdminOpen(true) : setAccountOpen(true);
+        }}
+      />
       <Testimonials />
       <Contact />
-      <Footer />
-      {accountOpen && <AccountPanel onClose={() => setAccountOpen(false)} onAdminLogin={signedInUser => { setAccountOpen(false); setUser(signedInUser); setIsAdmin(signedInUser.role === 'admin'); setAdminOpen(true); }} />}
-      {adminOpen && user && <Dashboard api={api} user={user} token={localStorage.getItem('hm-token')} pendingRegistration={pendingRegistration} onClose={() => { setAdminOpen(false); setPendingRegistration(null); }} onLogout={() => { localStorage.removeItem('hm-token'); localStorage.removeItem('hm-user'); setAdminOpen(false); setUser(null); setIsAdmin(false); setPendingRegistration(null); }} />}
+      <Footer onVerifyOpen={() => setVerifyOpen(true)} />
+
+      {accountOpen && (
+        <AccountPanel
+          onClose={() => setAccountOpen(false)}
+          onAdminLogin={signedInUser => {
+            setAccountOpen(false);
+            setUser(signedInUser);
+            setIsAdmin(signedInUser.role === 'admin' || signedInUser.role === 'coordinator');
+            setAdminOpen(true);
+          }}
+        />
+      )}
+
+      {verifyOpen && <CertificateVerifyModal onClose={() => setVerifyOpen(false)} />}
+
+      {adminOpen && user && (
+        <Dashboard
+          api={api}
+          user={user}
+          token={localStorage.getItem('hm-token')}
+          pendingRegistration={pendingRegistration}
+          onClose={() => {
+            setAdminOpen(false);
+            setPendingRegistration(null);
+          }}
+          onLogout={() => {
+            localStorage.removeItem('hm-token');
+            localStorage.removeItem('hm-user');
+            setAdminOpen(false);
+            setUser(null);
+            setIsAdmin(false);
+            setPendingRegistration(null);
+          }}
+        />
+      )}
     </div>
   );
 }
