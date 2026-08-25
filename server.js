@@ -19,11 +19,7 @@ const mongoUri = process.env.MONGO_URI;
 const Store = mongoose.model('MandliStore', new mongoose.Schema({ key: { type: String, unique: true }, data: mongoose.Schema.Types.Mixed }, { timestamps: true }));
 let mongoConnected = false;
 
-const allowedOrigin = process.env.CLIENT_ORIGIN;
-app.use(cors({ origin: (origin, callback) => {
-  if (!origin || (allowedOrigin && origin === allowedOrigin) || /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return callback(null, true);
-  callback(new Error('Origin not allowed.'));
-} }));
+app.use(cors());
 app.use(helmet());
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false }));
 app.use(express.json({ limit: '32kb' }));
