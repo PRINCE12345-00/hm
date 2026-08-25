@@ -206,7 +206,7 @@ function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthe
         </button>
 
         {/* Rightmost Side: Navigation Items */}
-        <nav className={`${open ? 'absolute left-0 top-full flex' : 'hidden'} w-full flex-col gap-2 bg-haryana-dark/98 px-6 py-5 shadow-2xl md:static md:flex md:w-auto md:flex-row md:items-center md:gap-4 md:bg-transparent md:p-0 md:shadow-none md:ml-auto`}>
+        <nav className={`${open ? 'absolute left-0 top-full flex' : 'hidden'} w-full flex-col gap-2.5 bg-[#2D1810] border-b-2 border-haryana-mustard/30 px-6 py-6 shadow-2xl z-50 md:static md:flex md:w-auto md:flex-row md:items-center md:gap-4 md:bg-transparent md:p-0 md:shadow-none md:border-b-0 md:ml-auto`}>
           {navItems.map(([label, id]) =>
             id === 'auditions' ? (
               <button
@@ -215,9 +215,9 @@ function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthe
                   setOpen(false);
                   onAccountOpen();
                 }}
-                className="rounded-lg px-3.5 py-2 text-sm font-semibold text-white/85 transition-all hover:bg-white/10 hover:text-haryana-mustard text-left flex items-center gap-1.5"
+                className="rounded-xl px-4 py-2.5 text-base font-semibold text-white/90 transition-all hover:bg-white/10 hover:text-haryana-mustard text-left flex items-center gap-2 bg-white/5 md:bg-transparent md:text-sm md:py-2 md:px-3.5"
               >
-                <span className="h-2 w-2 rounded-full bg-haryana-mustard animate-pulse"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-haryana-mustard animate-pulse"></span>
                 {label}
               </button>
             ) : (
@@ -225,7 +225,7 @@ function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthe
                 key={id}
                 href={`#${id}`}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3.5 py-2 text-sm font-semibold text-white/85 transition-all hover:bg-white/10 hover:text-haryana-mustard"
+                className="rounded-xl px-4 py-2.5 text-base font-semibold text-white/90 transition-all hover:bg-white/10 hover:text-haryana-mustard bg-white/5 md:bg-transparent md:text-sm md:py-2 md:px-3.5"
               >
                 {label}
               </a>
@@ -237,9 +237,9 @@ function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthe
               setOpen(false);
               onVerifyOpen();
             }}
-            className="rounded-lg px-3.5 py-2 text-sm font-semibold text-white/85 transition-all hover:bg-white/10 hover:text-haryana-mustard text-left flex items-center gap-1.5"
+            className="rounded-xl px-4 py-2.5 text-base font-semibold text-white/90 transition-all hover:bg-white/10 hover:text-haryana-mustard text-left flex items-center gap-2 bg-white/5 md:bg-transparent md:text-sm md:py-2 md:px-3.5"
           >
-            <ShieldCheck size={16} className="text-haryana-mustard" /> Verify Certificate
+            <ShieldCheck size={18} className="text-haryana-mustard" /> Verify Certificate
           </button>
 
           <button
@@ -247,7 +247,7 @@ function Navigation({ onAccountOpen, onAdminOpen, onVerifyOpen, isAdmin, isAuthe
               setOpen(false);
               isAuthenticated ? onAdminOpen() : onAccountOpen();
             }}
-            className="mt-3 md:mt-0 ml-0 md:ml-2 inline-flex items-center justify-center gap-2 rounded-full border-2 border-haryana-mustard bg-haryana-mustard/10 px-5 py-2 text-sm font-bold text-haryana-mustard backdrop-blur transition-all hover:bg-haryana-mustard hover:text-haryana-dark shadow-md"
+            className="mt-3 md:mt-0 ml-0 md:ml-2 inline-flex items-center justify-center gap-2 rounded-full border-2 border-haryana-mustard bg-haryana-mustard text-haryana-dark px-6 py-2.5 text-base font-bold shadow-lg transition-all hover:bg-yellow-400 md:bg-haryana-mustard/10 md:text-haryana-mustard md:hover:bg-haryana-mustard md:hover:text-haryana-dark md:text-sm md:py-2 md:px-5"
           >
             {isAuthenticated ? (isAdmin ? 'Admin Panel' : 'My Dashboard') : 'Join Mandli / Login'}
           </button>
