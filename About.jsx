@@ -34,7 +34,7 @@ const About = () => {
               <h3 className="text-3xl font-bold text-haryana-dark mb-4">Our History</h3>
               <p className="text-gray-700 leading-relaxed mb-4">
                 Haryanvi Mandli was established in <span className="font-semibold text-haryana-red">2014</span> by the visionary 
-                <span className="font-semibold text-haryana-red"> Kadir Khan Sir</span> at DCRUST (Deenbandhu Chhotu Ram University of Science and Technology). 
+                <span className="font-semibold text-haryana-red"> Kadir Khan</span> at DCRUST (Deenbandhu Chhotu Ram University of Science and Technology). 
                 What started as a small initiative has grown into a vibrant cultural society that celebrates and preserves 
                 the rich heritage of Haryana.
               </p>
@@ -98,13 +98,13 @@ const About = () => {
         >
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="w-36 h-36 md:w-44 md:h-44 bg-gradient-to-br from-haryana-mustard to-haryana-red rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden border-4 border-haryana-mustard shadow-xl">
-              <img src="/pictures/kadir khan.jpeg" alt="Kadir Khan Sir" className="w-full h-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
+              <img src="/pictures/kadir khan.jpeg" alt="Kadir Khan" className="w-full h-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
             </div>
             <div className="text-center md:text-left">
               <h3 className="text-3xl font-bold mb-2">Our Founder</h3>
-              <div className="text-2xl text-haryana-mustard font-semibold mb-4">Kadir Khan Sir</div>
+              <div className="text-2xl text-haryana-mustard font-semibold mb-4">Kadir Khan</div>
               <p className="text-white/90 leading-relaxed max-w-2xl">
-                A visionary educator and cultural enthusiast, Kadir Khan Sir founded Haryanvi Mandli with the belief that 
+                A visionary educator and cultural enthusiast, Kadir Khan founded Haryanvi Mandli with the belief that 
                 art and culture are essential for holistic development. His dedication and passion have inspired 
                 countless students to embrace their cultural roots and showcase their talents on national stages.
               </p>
@@ -122,7 +122,7 @@ const About = () => {
         >
           {[
             { icon: Award, label: 'Awards Won', value: '50+' },
-            { icon: Users, label: 'Active Members', value: '200+' },
+            { icon: Users, label: 'Active Members', value: '50+' },
             { icon: Target, label: 'Events Performed', value: '100+' },
             { icon: Heart, label: 'Years of Excellence', value: '10+' },
           ].map((stat, index) => (

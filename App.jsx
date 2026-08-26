@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, CalendarDays, CheckCircle, Instagram, LayoutDashboard, LockKeyhole, LogIn, LogOut, Mail, MapPin, Menu, Music, Phone, Play, Quote, ShieldCheck, Star, Trash2, Users, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCircle, Facebook, Instagram, LayoutDashboard, LockKeyhole, LogIn, LogOut, Mail, MapPin, Menu, Music, Phone, Play, Quote, ShieldCheck, Star, Trash2, Users, Youtube, X } from 'lucide-react';
 import About from './About';
 import Dashboard from './Dashboard';
 
@@ -45,6 +45,16 @@ async function api(path, options = {}) {
   return data;
 }
 
+const INTEREST_OPTIONS = [
+  'Folk Dance',
+  'Fine Arts',
+  'Music & Singing',
+  'Theatre & Dramatics',
+  'Management & Event Operations',
+  'Social Media & PR',
+  'Technical & Stage Setup',
+];
+
 function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
   const [mode, setMode] = useState(initialMode);
   const [message, setMessage] = useState('');
@@ -56,12 +66,30 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
     rollNo: '',
     year: '1st Year',
     phone: '',
-    interest: 'Dance (Folk / Cultural)'
+    interests: ['Folk Dance']
   });
+
+  function toggleInterest(opt) {
+    setForm(prev => {
+      const current = prev.interests || [];
+      if (current.includes(opt)) {
+        if (current.length === 1) return prev;
+        return { ...prev, interests: current.filter(i => i !== opt) };
+      } else {
+        if (current.length >= 2) return prev;
+        return { ...prev, interests: [...current, opt] };
+      }
+    });
+  }
 
   function submit(event) {
     event.preventDefault();
-    api(mode === 'login' ? '/auth/login' : '/auth/signup', { method: 'POST', body: form }).then(result => {
+    const payload = {
+      ...form,
+      interest: form.interests && form.interests.length > 0 ? form.interests.join(', ') : 'Folk Dance'
+    };
+    delete payload.interests;
+    api(mode === 'login' ? '/auth/login' : '/auth/signup', { method: 'POST', body: payload }).then(result => {
       localStorage.setItem('hm-token', result.token);
       localStorage.setItem('hm-user', JSON.stringify(result.user));
       if (result.user.role === 'admin' || result.user.role === 'coordinator' || result.user.role === 'member') onAdminLogin(result.user);
@@ -122,16 +150,32 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Primary Area of Interest *</label>
-                <select value={form.interest} onChange={event => setForm({ ...form, interest: event.target.value })} className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red bg-white">
-                  <option>Dance (Folk / Cultural)</option>
-                  <option>Music & Singing</option>
-                  <option>Theatre & Dramatics</option>
-                  <option>Fine Arts & Craft</option>
-                  <option>Management & Event Operations</option>
-                  <option>Social Media & PR</option>
-                  <option>Technical & Stage Setup</option>
-                </select>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">Areas of Interest (Select up to 2) *</label>
+                  <span className="text-[11px] font-bold text-haryana-red">{form.interests?.length || 0}/2 selected</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {INTEREST_OPTIONS.map(option => {
+                    const isSelected = form.interests?.includes(option);
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleInterest(option)}
+                        className={`flex items-center gap-2 rounded-lg border p-2 text-left text-xs transition-all ${
+                          isSelected
+                            ? 'border-haryana-red bg-haryana-red/10 text-haryana-red font-semibold shadow-sm'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className={`h-4 w-4 flex-shrink-0 rounded flex items-center justify-center border ${isSelected ? 'border-haryana-red bg-haryana-red text-white' : 'border-gray-300 bg-white'}`}>
+                          {isSelected && <span className="text-[10px] font-bold leading-none">✓</span>}
+                        </div>
+                        <span className="truncate">{option}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </>
           )}
@@ -343,7 +387,7 @@ function Activities() {
 
 function SectionHeading({ eyebrow, title }) { return <div className="mb-12"><p className="mb-2 text-sm font-bold uppercase tracking-[.2em] text-haryana-red">{eyebrow}</p><h2 className="text-4xl font-bold text-haryana-dark md:text-5xl">{title}</h2></div>; }
 
-function Achievements() { return <section id="achievements" className="bg-haryana-red py-28 lg:py-36 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Our milestones" title="A decade of showing up" /><div className="grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-4">{[['50+', 'Awards won'], ['200+', 'Active members'], ['100+', 'Events performed'], ['10+', 'Years of excellence']].map(([value, label]) => <div key={label} className="border-l-2 border-white/30 p-6 md:p-8"><p className="text-5xl md:text-6xl font-bold text-haryana-mustard">{value}</p><p className="mt-3 text-lg text-white/90 font-medium">{label}</p></div>)}</div></div></section>; }
+function Achievements() { return <section id="achievements" className="bg-haryana-red py-28 lg:py-36 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Our milestones" title="A decade of showing up" /><div className="grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-4">{[['50+', 'Awards won'], ['50+', 'Active members'], ['100+', 'Events performed'], ['10+', 'Years of excellence']].map(([value, label]) => <div key={label} className="border-l-2 border-white/30 p-6 md:p-8"><p className="text-5xl md:text-6xl font-bold text-haryana-mustard">{value}</p><p className="mt-3 text-lg text-white/90 font-medium">{label}</p></div>)}</div></div></section>; }
 
 function Gallery() { return <section id="gallery" className="bg-haryana-cream py-28 lg:py-36"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="From the archive" title="Moments worth remembering" /><div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{gallery.map(([src, alt]) => <figure key={alt} className="group relative overflow-hidden rounded-2xl bg-haryana-dark shadow-xl"><img src={src} alt={alt} className="h-[420px] md:h-[480px] w-full object-cover object-[center_20%] transition duration-500 group-hover:scale-110 group-hover:opacity-85" /><figcaption className="absolute bottom-0 w-full bg-gradient-to-t from-black/85 via-black/40 to-transparent p-6 pt-16 text-lg font-bold text-white">{alt}</figcaption></figure>)}</div></div></section>; }
 
@@ -387,9 +431,9 @@ function Team() {
     ],
     [
       'Khushboo',
-      'PR Head / Treasurer',
+      'PR Head',
       'Chemical Engineering · 3rd Year',
-      'Managing budgets and public relations so creativity can take the stage.',
+      'Managing public relations and communications so creativity can take the stage.',
       '/pictures/khusboo pr head.jpeg'
     ],
   ];
@@ -443,7 +487,117 @@ function Team() {
 
 function Events() { return <section id="events" className="bg-haryana-dark py-20 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Join us" title="Coming up on stage" /><div className="grid gap-5 md:grid-cols-3">{[['Aagaz 2026', '12 Sep 2026', 'DCRUST Amphitheatre'], ['Rang-e-Haryana', '04 Oct 2026', 'University Cultural Fest'], ['Open Auditions', '18 Oct 2026', 'Mandli Practice Hall']].map(([name, date, place]) => <article key={name} className="rounded-xl border border-white/15 bg-white/5 p-6"><CalendarDays className="mb-8 text-haryana-mustard" /><h3 className="text-2xl font-bold">{name}</h3><p className="mt-3 text-haryana-mustard">{date}</p><p className="mt-2 text-white/60">{place}</p></article>)}</div></div></section>; }
 
-function EventsFromApi({ api, onRegister, onAccountOpen }) { const [events, setEvents] = useState([]); const [selectedEvent, setSelectedEvent] = useState(null); useEffect(() => { api('/events').then(result => setEvents(result.events)).catch(() => setEvents([])); }, [api]); return <section id="events" className="bg-haryana-dark py-28 lg:py-36 text-white"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="Join us" title="Coming up on stage" /><div className="grid gap-6 md:grid-cols-3">{events.length === 0 ? [['Aagaz 2026', '12 Sep 2026', 'DCRUST Amphitheatre'], ['Rang-e-Haryana', '04 Oct 2026', 'University Cultural Fest'], ['Open Auditions 2026', '18 Oct 2026', 'Mandli Practice Hall']].map(([name, date, place]) => <article key={name} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]"><div><CalendarDays className="mb-8 text-haryana-mustard" size={38} /><h3 className="text-2xl md:text-3xl font-bold">{name}</h3><p className="mt-4 text-haryana-mustard text-lg font-semibold">{date}</p><p className="mt-2 text-white/70">{place}</p></div><button onClick={onAccountOpen} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font.bold text-haryana-dark hover:bg-yellow-400 transition-colors w-full font-semibold">{name.includes('Audition') ? 'Apply for Audition' : 'Register / get pass'}</button></article>) : events.map(event => <article key={event.id} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]"><div><CalendarDays className="mb-8 text-haryana-mustard" size={38} /><h3 className="text-2xl md:text-3xl font-bold">{event.title}</h3><p className="mt-4 text-haryana-mustard text-lg font-semibold">{new Date(event.startsAt).toLocaleString()}</p><p className="mt-2 text-white/70">{event.venue}</p><p className="mt-4 text-white/80">{event.description}</p></div><button onClick={() => event.title?.toLowerCase().includes('audition') ? onAccountOpen() : setSelectedEvent(event)} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font-semibold text-haryana-dark hover:bg-yellow-400 transition-colors w-full">{event.title?.toLowerCase().includes('audition') ? 'Apply for Audition' : 'Register / get pass'}</button></article>)}</div></div>{selectedEvent && <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"><div className="w-full max-w-md rounded-xl bg-white p-7 text-haryana-dark"><div className="flex items-start justify-between gap-4"><div><p className="text-sm font-bold uppercase tracking-[.2em] text-haryana-red">Registration</p><h3 className="mt-2 text-2xl font-bold">{selectedEvent.title}</h3></div><button onClick={() => setSelectedEvent(null)} aria-label="Close registration options"><X /></button></div><p className="mt-5 text-gray-600">Choose your participation category:</p><div className="mt-4 grid gap-3 sm:grid-cols-2">{['Dance', 'Dramatic', 'Music', 'Theatre', 'Fine Arts'].map(category => <button key={category} onClick={() => { setSelectedEvent(null); onRegister(selectedEvent.id, category); }} className="rounded border border-haryana-red/20 px-4 py-3 text-left font-semibold hover:bg-haryana-cream">{category}</button>)}</div></div></div>}</section>; }
+function EventsFromApi({ api, onRegister, onAccountOpen }) {
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedCategories, setSelectedCategories] = useState(['Folk Dance']);
+
+  useEffect(() => {
+    api('/events').then(result => setEvents(result.events)).catch(() => setEvents([]));
+  }, [api]);
+
+  const eventCategories = ['Folk Dance', 'Fine Arts', 'Music', 'Theatre', 'Dramatic'];
+
+  function toggleEventCategory(cat) {
+    if (selectedCategories.includes(cat)) {
+      if (selectedCategories.length === 1) return;
+      setSelectedCategories(selectedCategories.filter(c => c !== cat));
+    } else {
+      if (selectedCategories.length >= 2) return;
+      setSelectedCategories([...selectedCategories, cat]);
+    }
+  }
+
+  return (
+    <section id="events" className="bg-haryana-dark py-28 lg:py-36 text-white">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12">
+        <SectionHeading eyebrow="Join us" title="Coming up on stage" />
+        <div className="grid gap-6 md:grid-cols-3">
+          {events.length === 0 ? [
+            ['Aagaz 2026', '12 Sep 2026', 'DCRUST Amphitheatre'],
+            ['Rang-e-Haryana', '04 Oct 2026', 'University Cultural Fest'],
+            ['Open Auditions 2026', '18 Oct 2026', 'Mandli Practice Hall']
+          ].map(([name, date, place]) => (
+            <article key={name} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]">
+              <div>
+                <CalendarDays className="mb-8 text-haryana-mustard" size={38} />
+                <h3 className="text-2xl md:text-3xl font-bold">{name}</h3>
+                <p className="mt-4 text-haryana-mustard text-lg font-semibold">{date}</p>
+                <p className="mt-2 text-white/70">{place}</p>
+              </div>
+              <button onClick={onAccountOpen} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font-semibold text-haryana-dark hover:bg-yellow-400 transition-colors w-full">
+                {name.includes('Audition') ? 'Apply for Audition' : 'Register / get pass'}
+              </button>
+            </article>
+          )) : events.map(event => (
+            <article key={event.id} className="rounded-2xl border border-white/15 bg-white/5 p-8 flex flex-col justify-between min-h-[320px]">
+              <div>
+                <CalendarDays className="mb-8 text-haryana-mustard" size={38} />
+                <h3 className="text-2xl md:text-3xl font-bold">{event.title}</h3>
+                <p className="mt-4 text-haryana-mustard text-lg font-semibold">{new Date(event.startsAt).toLocaleString()}</p>
+                <p className="mt-2 text-white/70">{event.venue}</p>
+                <p className="mt-4 text-white/80">{event.description}</p>
+              </div>
+              <button onClick={() => event.title?.toLowerCase().includes('audition') ? onAccountOpen() : setSelectedEvent(event)} className="mt-8 rounded-xl bg-haryana-mustard px-5 py-3 font-semibold text-haryana-dark hover:bg-yellow-400 transition-colors w-full">
+                {event.title?.toLowerCase().includes('audition') ? 'Apply for Audition' : 'Register / get pass'}
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {selectedEvent && (
+        <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-7 text-haryana-dark shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[.2em] text-haryana-red">Registration</p>
+                <h3 className="mt-1 text-2xl font-bold">{selectedEvent.title}</h3>
+              </div>
+              <button onClick={() => setSelectedEvent(null)} aria-label="Close registration options" className="text-gray-400 hover:text-haryana-red">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-600">Choose categories (select up to 2):</p>
+              <span className="text-xs font-bold text-haryana-red">{selectedCategories.length}/2 selected</span>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {eventCategories.map(cat => {
+                const isSel = selectedCategories.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => toggleEventCategory(cat)}
+                    className={`flex items-center gap-2 rounded-xl border p-2.5 text-left text-xs font-semibold transition-all ${
+                      isSel ? 'border-haryana-red bg-haryana-red/10 text-haryana-red' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`h-4 w-4 rounded flex items-center justify-center border ${isSel ? 'border-haryana-red bg-haryana-red text-white' : 'border-gray-300 bg-white'}`}>
+                      {isSel && <span className="text-[10px] font-bold">✓</span>}
+                    </div>
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                const cats = selectedCategories.join(', ');
+                setSelectedEvent(null);
+                onRegister(selectedEvent.id, cats);
+              }}
+              className="mt-6 w-full rounded-xl bg-haryana-red px-5 py-3 font-semibold text-white hover:bg-red-700 transition-colors"
+            >
+              Register for {selectedCategories.join(', ')}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 function Testimonials() {
   const [reviews, setReviews] = useState([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -509,7 +663,7 @@ function Testimonials() {
     </section>
   );
 }
-function Contact() { const [submitted, setSubmitted] = useState(false); const [error, setError] = useState(''); return <section id="contact" className="bg-white py-28 lg:py-36"><div className="mx-auto grid max-w-[1400px] gap-12 px-4 sm:px-8 lg:grid-cols-2 lg:px-12"><div><SectionHeading eyebrow="Say salaam" title="Bring your energy" /><p className="max-w-md text-lg leading-relaxed text-gray-600">Want to perform, collaborate or know more about Haryanvi Mandli? Reach out and we&apos;ll get back to you.</p><div className="mt-10 space-y-5 text-gray-700 text-lg"><p className="flex items-center gap-4"><Mail className="text-haryana-red" size={24} /> haryanvimandli@dcrust.ac.in</p><p className="flex items-center gap-4"><Phone className="text-haryana-red" size={24} /> +91 130 248 4000</p><p className="flex items-center gap-4"><MapPin className="text-haryana-red" size={24} /> DCRUST, Murthal, Sonipat, Haryana</p></div></div><form className="space-y-5 rounded-2xl bg-haryana-cream p-8 md:p-10 shadow-sm" onSubmit={event => { event.preventDefault(); const data = new FormData(event.currentTarget); setError(''); api('/requests', { method: 'POST', body: { name: data.get('name'), email: data.get('email'), message: data.get('message') } }).then(() => { setSubmitted(true); event.currentTarget.reset(); }).catch(requestError => setError(requestError.message)); }}><input required name="name" aria-label="Your name" placeholder="Your name" className="w-full rounded-lg border-0 p-4 text-base" /><input required name="email" type="email" aria-label="Email address" placeholder="Email address" className="w-full rounded-lg border-0 p-4 text-base" /><textarea required name="message" aria-label="Your message" placeholder="Tell us what you have in mind" rows="5" className="w-full rounded-lg border-0 p-4 text-base" /> {error && <p className="text-sm font-medium text-haryana-red">{error}</p>}<button className="inline-flex items-center gap-2 rounded-xl bg-haryana-red px-8 py-4 text-lg font-semibold text-white hover:bg-red-700 transition-colors" type="submit">{submitted ? <><CheckCircle size={20} /> Request sent</> : <>Send request <ArrowRight size={20} /></>}</button></form></div></section>; }
+function Contact() { const [submitted, setSubmitted] = useState(false); const [error, setError] = useState(''); return <section id="contact" className="bg-white py-28 lg:py-36"><div className="mx-auto grid max-w-[1400px] gap-12 px-4 sm:px-8 lg:grid-cols-2 lg:px-12"><div><SectionHeading eyebrow="Say salaam" title="Bring your energy" /><p className="max-w-md text-lg leading-relaxed text-gray-600">Want to perform, collaborate or know more about Haryanvi Mandli? Reach out and we&apos;ll get back to you.</p><div className="mt-10 space-y-5 text-gray-700 text-lg"><p className="flex items-center gap-4"><Mail className="text-haryana-red" size={24} /> haryanvimandli@dcrustm.org</p><p className="flex items-center gap-4"><Phone className="text-haryana-red" size={24} /> +91 83076 76381</p><p className="flex items-center gap-4"><MapPin className="text-haryana-red" size={24} /> DCRUST, Murthal, Sonipat, Haryana</p></div><div className="mt-8 flex flex-wrap items-center gap-3"><a href="https://www.instagram.com/haryanvi__mandli?igsi=dnFncDRoZDI0emZl" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Instagram size={18} /> Instagram</a><a href="https://youtube.com/@haryanvimandliofficial5729?si=s_QPVgMx2rX5wC9h" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Youtube size={18} /> YouTube</a><a href="https://www.facebook.com/share/1DiagXa5Nx/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Facebook size={18} /> Facebook</a></div></div><form className="space-y-5 rounded-2xl bg-haryana-cream p-8 md:p-10 shadow-sm" onSubmit={event => { event.preventDefault(); const data = new FormData(event.currentTarget); setError(''); api('/requests', { method: 'POST', body: { name: data.get('name'), email: data.get('email'), message: data.get('message') } }).then(() => { setSubmitted(true); event.currentTarget.reset(); }).catch(requestError => setError(requestError.message)); }}><input required name="name" aria-label="Your name" placeholder="Your name" className="w-full rounded-lg border-0 p-4 text-base" /><input required name="email" type="email" aria-label="Email address" placeholder="Email address" className="w-full rounded-lg border-0 p-4 text-base" /><textarea required name="message" aria-label="Your message" placeholder="Tell us what you have in mind" rows="5" className="w-full rounded-lg border-0 p-4 text-base" /> {error && <p className="text-sm font-medium text-haryana-red">{error}</p>}<button className="inline-flex items-center gap-2 rounded-xl bg-haryana-red px-8 py-4 text-lg font-semibold text-white hover:bg-red-700 transition-colors" type="submit">{submitted ? <><CheckCircle size={20} /> Request sent</> : <>Send request <ArrowRight size={20} /></>}</button></form></div></section>; }
 function CertificateVerifyModal({ onClose }) {
   const [certId, setCertId] = useState('');
   const [result, setResult] = useState(null);
@@ -603,8 +757,32 @@ function Footer({ onVerifyOpen }) {
           <button onClick={onVerifyOpen} className="hover:text-haryana-mustard flex items-center gap-1">
             <ShieldCheck size={16} /> Verify Certificate
           </button>
-          <a href="#home" aria-label="Haryanvi Mandli on Instagram" className="hover:text-haryana-mustard">
+          <a
+            href="https://www.instagram.com/haryanvi__mandli?igsi=dnFncDRoZDI0emZl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Haryanvi Mandli on Instagram"
+            className="hover:text-haryana-mustard transition-colors"
+          >
             <Instagram size={20} />
+          </a>
+          <a
+            href="https://youtube.com/@haryanvimandliofficial5729?si=s_QPVgMx2rX5wC9h"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Haryanvi Mandli on YouTube"
+            className="hover:text-haryana-mustard transition-colors"
+          >
+            <Youtube size={20} />
+          </a>
+          <a
+            href="https://www.facebook.com/share/1DiagXa5Nx/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Haryanvi Mandli on Facebook"
+            className="hover:text-haryana-mustard transition-colors"
+          >
+            <Facebook size={20} />
           </a>
         </div>
       </div>
