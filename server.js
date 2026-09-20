@@ -57,6 +57,9 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.post('/api/auth/signup', async (req, res) => {
   const { name, email, password, branch = '', rollNo = '', year = '', phone = '', interest = '' } = req.body;
   if (!name?.trim() || !email?.trim() || typeof password !== 'string' || password.length < 6) return res.status(400).json({ error: 'Name, email and a password of at least 6 characters are required.' });
+  if (!/^[A-Za-z]+(?:[\s'-][A-Za-z]+)*$/.test(name.trim()) || !/^\d{10}$/.test(phone.trim()) || !/^\d{11}$/.test(rollNo.trim())) {
+    return res.status(400).json({ error: 'Invalid credentials.' });
+  }
   const store = await readStore();
   const normalizedEmail = email.trim().toLowerCase();
   if (store.users.some(user => user.email === normalizedEmail)) return res.status(409).json({ error: 'An account with this email already exists.' });

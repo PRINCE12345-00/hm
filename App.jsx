@@ -84,6 +84,15 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
 
   function submit(event) {
     event.preventDefault();
+    if (mode === 'signup') {
+      const validName = /^[A-Za-z]+(?:[\s'-][A-Za-z]+)*$/.test(form.name.trim());
+      const validPhone = /^\d{10}$/.test(form.phone.trim());
+      const validRollNo = /^\d{11}$/.test(form.rollNo.trim());
+      if (!validName || !validPhone || !validRollNo) {
+        window.alert('Invalid credentials. Enter an alphabetical name, a 10-digit mobile number, and an 11-digit roll number.');
+        return;
+      }
+    }
     const payload = {
       ...form,
       interest: form.interests && form.interests.length > 0 ? form.interests.join(', ') : 'Folk Dance'
@@ -118,7 +127,7 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
             <>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
-                <input required value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} placeholder="Enter your full name" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
+                <input required pattern="[A-Za-z]+([ '-][A-Za-z]+)*" value={form.name} onChange={event => setForm({ ...form, name: event.target.value })} placeholder="Enter your full name" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -128,7 +137,7 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Roll Number *</label>
-                  <input required value={form.rollNo} onChange={event => setForm({ ...form, rollNo: event.target.value })} placeholder="e.g. 21001001001" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
+                  <input required pattern="\d{11}" maxLength="11" inputMode="numeric" value={form.rollNo} onChange={event => setForm({ ...form, rollNo: event.target.value })} placeholder="e.g. 21001001001" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
                 </div>
               </div>
 
@@ -145,7 +154,7 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Number *</label>
-                  <input required type="tel" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} placeholder="+91 9876543210" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
+                  <input required type="tel" pattern="\d{10}" maxLength="10" inputMode="numeric" value={form.phone} onChange={event => setForm({ ...form, phone: event.target.value })} placeholder="9876543210" className="w-full rounded border border-gray-200 p-2.5 sm:p-3 text-sm outline-none focus:border-haryana-red focus:ring-1 focus:ring-haryana-red" />
                 </div>
               </div>
 
@@ -400,21 +409,24 @@ function Team() {
     '/pictures/ar. sneh  teacher coordinator.jpeg'
   ];
 
-  const students = [
+  const coordinators = [
     [
       'Mukul',
       'Coordinator',
       'Electrical Engineering · Final Year',
       'Keeping rehearsals, performances and campus programs in rhythm.',
-      '/pictures/mukul coordinator.jpeg'
+      '/pictures/mukul.png'
     ],
     [
       'Prince',
-      'Management Head',
+      'Coordinator',
       'Computer Science & Engineering · Final Year',
       'Organizing resources, administration, and making each event run smoothly.',
-      '/pictures/prince management coordinator.jpeg'
+      '/pictures/prince .png'
     ],
+  ];
+
+  const heads = [
     [
       'Yash',
       'Social Media Head',
@@ -438,6 +450,20 @@ function Team() {
     ],
   ];
 
+  const renderPeople = people => people.map(([name, title, dept, description, photo]) => (
+    <div key={name} className="rounded-2xl border border-haryana-red/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl folk-border flex flex-col items-center justify-between">
+      <div>
+        <div className="mx-auto mb-6 h-36 w-36 sm:h-44 sm:w-44 overflow-hidden rounded-2xl border-3 border-haryana-mustard shadow-lg bg-haryana-cream">
+          <img src={encodeURI(photo)} alt={name} className="h-full w-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
+        </div>
+        <h3 className="text-2xl font-bold text-haryana-dark">{name}</h3>
+        <p className="mt-1 font-bold text-haryana-dark text-base">{title}</p>
+        <p className="mt-2 font-semibold text-haryana-red text-xs bg-haryana-red/10 px-3 py-1 rounded-full inline-block">{dept}</p>
+        <p className="mt-4 text-sm leading-relaxed text-gray-600">{description}</p>
+      </div>
+    </div>
+  ));
+
   return (
     <section id="team" className="bg-white py-28 lg:py-36">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12">
@@ -458,27 +484,22 @@ function Team() {
           </div>
         </div>
 
-        {/* Student Team Heading */}
         <div className="mb-12 text-center">
-          <h3 className="text-3xl font-bold text-haryana-dark">Student Coordinators & Heads</h3>
+          <h3 className="text-3xl font-bold text-haryana-dark">Student Coordinators</h3>
           <div className="mx-auto mt-3 h-1.5 w-20 rounded bg-haryana-mustard"></div>
         </div>
 
-        {/* Student Team Grid */}
+        <div className="mx-auto mb-20 grid max-w-4xl gap-8 sm:grid-cols-2">
+          {renderPeople(coordinators)}
+        </div>
+
+        <div className="mb-12 text-center">
+          <h3 className="text-3xl font-bold text-haryana-dark">Student Heads</h3>
+          <div className="mx-auto mt-3 h-1.5 w-20 rounded bg-haryana-mustard"></div>
+        </div>
+
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {students.map(([name, title, dept, description, photo]) => (
-            <div key={name} className="rounded-2xl border border-haryana-red/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl folk-border flex flex-col items-center justify-between">
-              <div>
-                <div className="mx-auto mb-6 h-36 w-36 sm:h-44 sm:w-44 overflow-hidden rounded-2xl border-3 border-haryana-mustard shadow-lg bg-haryana-cream">
-                  <img src={encodeURI(photo)} alt={name} className="h-full w-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
-                </div>
-                <h3 className="text-2xl font-bold text-haryana-dark">{name}</h3>
-                <p className="mt-1 font-bold text-haryana-dark text-base">{title}</p>
-                <p className="mt-2 font-semibold text-haryana-red text-xs bg-haryana-red/10 px-3 py-1 rounded-full inline-block">{dept}</p>
-                <p className="mt-4 text-sm leading-relaxed text-gray-600">{description}</p>
-              </div>
-            </div>
-          ))}
+          {renderPeople(heads)}
         </div>
       </div>
     </section>
