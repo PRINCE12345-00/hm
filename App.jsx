@@ -3,6 +3,12 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CalendarDays, CheckCircle, Facebook, Instagram, LayoutDashboard, LockKeyhole, LogIn, LogOut, Mail, MapPin, Menu, Music, Phone, Play, Quote, ShieldCheck, Star, Trash2, Users, Youtube, X } from 'lucide-react';
 import About from './About';
 import Dashboard from './Dashboard';
+import danceActivityImage from './pictures/dANCE.jpeg';
+import dramaticActivityImage from './pictures/DRAMATIC.jpeg';
+import musicActivityImage from './pictures/MUSIC.jpeg';
+import fineArtsActivityImage from './pictures/FINEART.jpeg';
+import mukulCoordinatorImage from './pictures/mukul.png';
+import princeCoordinatorImage from './pictures/prince .png';
 
 const navItems = [
   ['About', 'about'],
@@ -16,10 +22,10 @@ const navItems = [
 ];
 
 const activities = [
-  ['Dance', 'Dhamal, ghoomar and folk performances that carry Haryana\'s energy to every stage.'],
-  ['Music', 'Traditional instruments, soulful ragni and contemporary arrangements rooted in folk.'],
-  ['Theatre', 'Stories from Haryana brought alive through theatre, satire and student-led productions.'],
-  ['Fine Arts', 'Decorative arts, costumes and visual traditions that make every celebration memorable.'],
+  ['Dance', 'Dhamal, ghoomar and folk performances that carry Haryana\'s energy to every stage.', danceActivityImage],
+  ['Music', 'Traditional instruments, soulful ragni and contemporary arrangements rooted in folk.', musicActivityImage],
+  ['Theatre', 'Stories from Haryana brought alive through theatre, satire and student-led productions.', dramaticActivityImage],
+  ['Fine Arts', 'Decorative arts, costumes and visual traditions that make every celebration memorable.', fineArtsActivityImage],
 ];
 
 const gallery = [
@@ -391,7 +397,7 @@ function Hero({ onJoinOpen }) {
 }
 
 function Activities() {
-  return <section id="activities" className="bg-white py-28 lg:py-36"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="What we do" title="Tradition, made alive" /> <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{activities.map(([title, text], index) => <motion.article whileHover={{ y: -8 }} key={title} className="folk-border rounded-2xl bg-haryana-cream p-8 md:p-10 shadow-sm"><Music className="mb-8 text-haryana-red" size={40} /><h3 className="mb-3 text-2xl md:text-3xl font-bold text-haryana-dark">{title}</h3><p className="leading-relaxed text-gray-600 text-base">{text}</p><span className="mt-8 block text-base font-bold text-haryana-red">0{index + 1}</span></motion.article>)}</div></div></section>;
+  return <section id="activities" className="bg-white py-20 sm:py-24 lg:py-32"><div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12"><SectionHeading eyebrow="What we do" title="Tradition, made alive" /> <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{activities.map(([title, text, image], index) => <motion.article whileHover={{ y: -8 }} key={title} className="group relative isolate flex min-h-[360px] flex-col justify-end overflow-hidden rounded-2xl bg-haryana-dark p-6 shadow-lg sm:min-h-[400px] md:p-8"><img src={image} alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" /><div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/90 via-black/45 to-black/10" /><Music className="mb-auto text-haryana-mustard" size={36} /><div><h3 className="mb-3 text-2xl font-bold text-white md:text-3xl">{title}</h3><p className="leading-relaxed text-white/90">{text}</p><span className="mt-6 block text-sm font-bold tracking-[.2em] text-haryana-mustard">0{index + 1}</span></div></motion.article>)}</div></div></section>;
 }
 
 function SectionHeading({ eyebrow, title }) { return <div className="mb-12"><p className="mb-2 text-sm font-bold uppercase tracking-[.2em] text-haryana-red">{eyebrow}</p><h2 className="text-4xl font-bold text-haryana-dark md:text-5xl">{title}</h2></div>; }
@@ -415,14 +421,14 @@ function Team() {
       'Coordinator',
       'Electrical Engineering · Final Year',
       'Keeping rehearsals, performances and campus programs in rhythm.',
-      '/pictures/mukul.png'
+      mukulCoordinatorImage
     ],
     [
       'Prince',
       'Coordinator',
       'Computer Science & Engineering · Final Year',
       'Organizing resources, administration, and making each event run smoothly.',
-      '/pictures/prince .png'
+      princeCoordinatorImage
     ],
   ];
 
@@ -454,7 +460,7 @@ function Team() {
     <div key={name} className="rounded-2xl border border-haryana-red/10 bg-white p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl folk-border flex flex-col items-center justify-between">
       <div>
         <div className="mx-auto mb-6 h-36 w-36 sm:h-44 sm:w-44 overflow-hidden rounded-2xl border-3 border-haryana-mustard shadow-lg bg-haryana-cream">
-          <img src={encodeURI(photo)} alt={name} className="h-full w-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
+          <img src={photo.includes('%') ? photo : encodeURI(photo)} alt={name} className="h-full w-full object-cover object-[center_15%]" onError={e => { e.target.style.display = 'none'; }} />
         </div>
         <h3 className="text-2xl font-bold text-haryana-dark">{name}</h3>
         <p className="mt-1 font-bold text-haryana-dark text-base">{title}</p>
