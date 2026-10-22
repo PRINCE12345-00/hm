@@ -316,8 +316,19 @@ app.delete('/api/admin/reviews/:id', requireAuth, requireRoles('admin', 'coordin
 
 async function ensureAdmin() {
   const store = await readStore();
-  const email = (process.env.ADMIN_EMAIL || 'admin@haryanamandli.in').toLowerCase();
-  if (!store.users.some(user => user.email === email)) store.users.push({ id: crypto.randomUUID(), name: 'Haryanvi Mandli Admin', email, password: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 12), role: 'admin', verified: true, verificationToken: null, resetToken: null });
+  const email = (process.env.ADMIN_EMAIL || 'prince@admin.in').trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || 'admin@123';
+  let admin = store.users.find(user => user.email === email && user.role === 'admin');
+  admin ||= store.users.find(user => user.role === 'admin');
+  if (admin) {
+    admin.email = email;
+    admin.password = await bcrypt.hash(password, 12);
+    admin.verified = true;
+    admin.verificationToken = null;
+    admin.resetToken = null;
+  } else {
+    store.users.push({ id: crypto.randomUUID(), name: 'Haryanvi Mandli Admin', email, password: await bcrypt.hash(password, 12), role: 'admin', verified: true, verificationToken: null, resetToken: null });
+  }
   await writeStore(store);
 }
 

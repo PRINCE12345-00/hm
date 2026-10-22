@@ -35,8 +35,6 @@ const gallery = [
   ['/pictures/pic4.jpeg', 'Campus Celebration'],
 ];
 
-const ADMIN_EMAIL = 'admin@haryanamandli.in';
-const ADMIN_PASSWORD = 'admin123';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 async function api(path, options = {}) {
@@ -216,7 +214,6 @@ function AccountPanel({ onClose, onAdminLogin, initialMode = 'signup' }) {
           {mode === 'login' ? 'New student? Join Haryanvi Mandli' : 'Already have an account? Log in'}
         </button>
 
-        {mode === 'login' && <p className="mt-5 border-t pt-4 text-xs text-gray-500">Admin demo: {ADMIN_EMAIL} / {ADMIN_PASSWORD}</p>}
       </div>
     </div>
   );

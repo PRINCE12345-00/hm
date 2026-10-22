@@ -54,7 +54,7 @@ The API runs at `http://localhost:3001`. Copy `.env.example` to `.env`, set `MON
 
 For MongoDB Atlas: create a free cluster, create a database user, allow your development IP in Network Access, copy the Node.js connection string, and put it in `.env` as `MONGO_URI`. Example local value: `mongodb://127.0.0.1:27017/haryana_mandli`. Start the API with `npm run server`; it prints `MongoDB connected` when the connection succeeds and exits with an error if the configured MongoDB server is unavailable.
 
-The default development admin is `admin@haryanamandli.in` with password `admin123`. Change it through `ADMIN_PASSWORD` in `.env` before using the application outside local development.
+The default development admin is `prince@admin.in`. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` before using the application outside local development. Admin passwords are stored as bcrypt hashes.
 
 The dashboard is available from the `Login / Sign up` button. Members can view their profile and register for events. Administrators and coordinators can manage events, members, contact requests, auditions, announcements, and analytics. API details are listed in `openapi.json`.
 
