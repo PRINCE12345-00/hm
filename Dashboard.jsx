@@ -231,7 +231,9 @@ export default function Dashboard({ api, user, token, pendingRegistration, onClo
   function printCertificate(certificate) {
     const escapeHtml = value => String(value || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character]);
 
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=HM-CERT:${encodeURIComponent(certificate.certificateId)}`;
+    const verificationUrl = new URL(window.location.pathname, window.location.origin);
+    verificationUrl.searchParams.set('verify', certificate.certificateId);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(verificationUrl.toString())}`;
 
     const htmlContent = `<!doctype html>
 <html>

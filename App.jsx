@@ -688,14 +688,14 @@ function Testimonials() {
   );
 }
 function Contact() { const [submitted, setSubmitted] = useState(false); const [error, setError] = useState(''); return <section id="contact" className="bg-white py-28 lg:py-36"><div className="mx-auto grid max-w-[1400px] gap-12 px-4 sm:px-8 lg:grid-cols-2 lg:px-12"><div><SectionHeading eyebrow="Say salaam" title="Bring your energy" /><p className="max-w-md text-lg leading-relaxed text-gray-600">Want to perform, collaborate or know more about Haryanvi Mandli? Reach out and we&apos;ll get back to you.</p><div className="mt-10 space-y-5 text-gray-700 text-lg"><p className="flex items-center gap-4"><Mail className="text-haryana-red" size={24} /> haryanvimandli@dcrustm.org</p><p className="flex items-center gap-4"><Phone className="text-haryana-red" size={24} /> +91 83076 76381</p><p className="flex items-center gap-4"><MapPin className="text-haryana-red" size={24} /> DCRUST, Murthal, Sonipat, Haryana</p></div><div className="mt-8 flex flex-wrap items-center gap-3"><a href="https://www.instagram.com/haryanvi__mandli?igsi=dnFncDRoZDI0emZl" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Instagram size={18} /> Instagram</a><a href="https://youtube.com/@haryanvimandliofficial5729?si=s_QPVgMx2rX5wC9h" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Youtube size={18} /> YouTube</a><a href="https://www.facebook.com/share/1DiagXa5Nx/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-full border border-haryana-red/20 bg-haryana-cream px-4 py-2 text-sm font-semibold text-haryana-dark hover:bg-haryana-red hover:text-white transition-all shadow-sm"><Facebook size={18} /> Facebook</a></div></div><form className="space-y-5 rounded-2xl bg-haryana-cream p-8 md:p-10 shadow-sm" onSubmit={event => { event.preventDefault(); const data = new FormData(event.currentTarget); setError(''); api('/requests', { method: 'POST', body: { name: data.get('name'), email: data.get('email'), message: data.get('message') } }).then(() => { setSubmitted(true); event.currentTarget.reset(); }).catch(requestError => setError(requestError.message)); }}><input required name="name" aria-label="Your name" placeholder="Your name" className="w-full rounded-lg border-0 p-4 text-base" /><input required name="email" type="email" aria-label="Email address" placeholder="Email address" className="w-full rounded-lg border-0 p-4 text-base" /><textarea required name="message" aria-label="Your message" placeholder="Tell us what you have in mind" rows="5" className="w-full rounded-lg border-0 p-4 text-base" /> {error && <p className="text-sm font-medium text-haryana-red">{error}</p>}<button className="inline-flex items-center gap-2 rounded-xl bg-haryana-red px-8 py-4 text-lg font-semibold text-white hover:bg-red-700 transition-colors" type="submit">{submitted ? <><CheckCircle size={20} /> Request sent</> : <>Send request <ArrowRight size={20} /></>}</button></form></div></section>; }
-function CertificateVerifyModal({ onClose }) {
-  const [certId, setCertId] = useState('');
+function CertificateVerifyModal({ onClose, initialCertificateId = '' }) {
+  const [certId, setCertId] = useState(initialCertificateId);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   function verify(e) {
-    e.preventDefault();
+    e?.preventDefault();
     if (!certId.trim()) return;
     setLoading(true);
     setError('');
@@ -715,6 +715,10 @@ function CertificateVerifyModal({ onClose }) {
         setError(err.message || 'Failed to verify certificate.');
       });
   }
+
+  useEffect(() => {
+    if (initialCertificateId) verify();
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[65] flex items-center justify-center overflow-y-auto bg-haryana-dark/80 p-4 backdrop-blur-sm" role="dialog">
@@ -776,7 +780,10 @@ function Footer({ onVerifyOpen }) {
   return (
     <footer className="bg-haryana-dark py-8 text-white">
       <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-4 text-sm text-white/60 sm:flex-row sm:px-8 lg:px-12">
-        <p>© 2026 Haryanvi Mandli, DCRUST</p>
+        <div className="text-center sm:text-left">
+          <p>© 2026 Haryanvi Mandli, DCRUST</p>
+          <p className="mt-1">Created by Prince Chahal</p>
+        </div>
         <div className="flex items-center gap-6">
           <button onClick={onVerifyOpen} className="hover:text-haryana-mustard flex items-center gap-1">
             <ShieldCheck size={16} /> Verify Certificate
@@ -817,7 +824,8 @@ function Footer({ onVerifyOpen }) {
 function App() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
-  const [verifyOpen, setVerifyOpen] = useState(false);
+  const [certificateIdFromQr] = useState(() => new URLSearchParams(window.location.search).get('verify') || '');
+  const [verifyOpen, setVerifyOpen] = useState(Boolean(certificateIdFromQr));
   const [isAdmin, setIsAdmin] = useState(() => {
     const role = JSON.parse(localStorage.getItem('hm-user') || 'null')?.role;
     return role === 'admin' || role === 'coordinator';
@@ -865,7 +873,7 @@ function App() {
         />
       )}
 
-      {verifyOpen && <CertificateVerifyModal onClose={() => setVerifyOpen(false)} />}
+      {verifyOpen && <CertificateVerifyModal initialCertificateId={certificateIdFromQr} onClose={() => setVerifyOpen(false)} />}
 
       {adminOpen && user && (
         <Dashboard
